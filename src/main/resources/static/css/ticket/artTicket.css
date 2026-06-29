@@ -1,0 +1,124 @@
+body { font-family: 'Pretendard', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+.container { max-width: 1024px;
+             margin: 0 auto; 
+            margin-top: 50px;
+            border: solid;
+            padding: 20px;
+             box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+        }
+
+        h2 {
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    border-left: 6px solid #00ff88;
+    padding-left: 15px;
+}
+
+
+/* 티켓 리스트 (1024px에 최적화된 가로형 카드) */
+.ticketList {
+    display: flex;
+    background: #1e1e1e;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+    border: 1px solid #333;
+    height: 280px; /* 카드의 높이를 명시적으로 고정 */
+}
+
+.ticketList:hover {
+    transform: translateX(10px); /* 위가 아니라 오른쪽으로 살짝 미는 효과 */
+    border-color: #00ff88;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+}
+
+/* 이미지 영역 - 1024px 기준에서 비율 조정 */
+.artImg {
+    width: 220px; /* 이미지 너비 살짝 확대 */
+    height: 100%;
+    flex-shrink: 0;
+}
+
+.artImg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 정보 영역 */
+.artInfo {
+    flex-grow: 1; /* 남은 공간을 다 차지 */
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 세로 중앙 정렬 */
+    position: relative; /* 버튼 배치를 위해 */
+}
+
+.artName p {
+    color: #fff;
+    font-size: 1.6rem; /* 폰트 크기 업 */
+    font-weight: 700;
+    margin: 0 0 20px 0;
+}
+
+.areaInfo span {
+    color: #bbb;
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* 예매하기 버튼 추가 (오른쪽 하단 고정) */
+.btn-reserve-small {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    background: #00ff88;
+    color: #000;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-reserve-small:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+/* 필터 버튼 스타일 */
+.choiceArea { display: flex; gap: 10px; margin-bottom: 20px; }
+.filter-btn {
+    background: #333; color: #00ff88; border: 1px solid #00ff88;
+    padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;
+}
+
+/* 모달 기본 구조 */
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+    align-items: center; justify-content: center;
+}
+.modal-content {
+    background: #222; padding: 25px; border-radius: 15px;
+    width: 90%; max-width: 400px; text-align: center; border: 1px solid #444;
+}
+.modal-content h3 { color: #fff; margin-bottom: 20px; }
+
+/* 그리드 레이아웃 (지역/랭킹 아이템) */
+.grid-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.area-item, .rank-item {
+    background: #333; color: #ccc; border: 1px solid #444;
+    padding: 12px 5px; border-radius: 5px; cursor: pointer; transition: 0.3s;
+}
+.area-item:hover, .rank-item:hover { border-color: #00ff88; color: #00ff88; }
+.area-item.active, .rank-item.active { background: #00ff88; color: #000; border-color: #00ff88; }
+
+.close-btn { background: transparent; color: #888; border: none; cursor: pointer; text-decoration: underline; }
+
+/* 리스트 스타일 생략 (기존 스타일 유지) */
+.no-data { text-align: center; color: #888; padding: 50px; width: 100%; }

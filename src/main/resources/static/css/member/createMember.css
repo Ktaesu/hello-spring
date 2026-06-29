@@ -1,0 +1,63 @@
+.join-wrapper {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
+
+.input-btn-wrap { display: flex; gap: 10px; }
+.input-btn-wrap input { flex: 1; }
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.sub-btn {
+    width: 100px;
+    background: #34495e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.msg { font-size: 12px; margin-top: 5px; display: block; }
+.error { color: #e74c3c; }
+.success { color: #2ecc71; }
+
+.join-btn-group { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+#btnSubmit { padding: 15px; background: #27ae60; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+#btnBack { padding: 10px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer; }
+
+/* 기본 메시지 스타일 */
+.msg {
+    font-size: 11px;
+    margin-top: 5px;
+    display: block;
+    min-height: 15px; /* 글자가 없어도 자리를 차지하게 해서 레이아웃 깨짐 방지 */
+}
+
+/* 에러 발생 시 */
+.msg.error {
+    color: #ff0000; /* 붉은색 */
+}
+
+/* 성공 시 */
+.msg.success {
+    color: #2ecc71; /* 초록색 */
+}
+
+/* 입력창 강조 (선택사항) */
+.form-group input.error-border {
+    border: 1px solid #ff0000;
+}

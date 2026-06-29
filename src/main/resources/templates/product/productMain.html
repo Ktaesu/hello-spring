@@ -1,0 +1,42 @@
+<!dOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/ticket/mainTicket.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <h1>🎟️ Demo Ticket </h1>
+            <div class="ticketItems">
+
+                <div class="category-card">
+                    <a th:href="@{/product/artTicket}">
+                        <div class="img-box">
+                            <img th:src="@{/images/ticket/art.png}" alt="전시 이미지">
+                        </div>
+                        <div class="text-box">
+                            <span class="category-name">전시</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="category-card">
+                    <a th:href="@{/ticket/concert}">
+                        <div class="img-box">
+                            <img th:src="@{/images/ticket/concert.png}" alt="전시 이미지">
+                        </div>
+                        <div class="text-box">
+                            <span class="category-name">콘서트</span>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+            
+    </div>
+</body>

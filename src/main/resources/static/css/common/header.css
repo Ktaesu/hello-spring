@@ -1,0 +1,41 @@
+.header{
+    width: 100%;
+    height: 150px;
+    border-bottom: 1px solid #D9D9D9;
+    min-width: 1056px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.first{
+    display: flex;
+    align-items: center;
+    margin-left: 100px;
+}
+
+.icon{
+    margin-right: 100px;
+}
+
+.searchbar input[type="text"] {
+    border: 1px solid #444;
+    padding: 12px 20px;
+    border-radius: 50px;
+    width: 657px;
+    height: 60px;
+}
+
+.menu{
+    display: flex;
+    align-items: center;
+        margin-right: 100px;
+}
+
+.menu div{
+    margin: 10px;
+
+}
+
+
+

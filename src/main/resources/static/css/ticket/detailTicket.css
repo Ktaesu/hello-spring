@@ -1,0 +1,579 @@
+:root {
+            --primary: #ff6b6b;
+            --primary-light: #ff8e8e;
+            --accent: #ffd93d;
+            --accent2: #6bcb77;
+            --bg: #f8f7f4;
+            --bg2: #ffffff;
+            --bg3: #f2f0ec;
+            --text: #1a1a2e;
+            --text-muted: #888;
+            --border: #e8e4de;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+            --radius: 16px;
+            --radius-sm: 8px;
+            --sticky-h: 56px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        /* ══ STICKY TAB NAV ══ */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg2);
+            border-bottom: 2px solid var(--border);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .sticky-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            height: var(--sticky-h);
+            padding: 0 24px;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border: none;
+            background: none;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .nav-tab:hover { color: var(--text); background: var(--bg3); }
+        .nav-tab.active { color: white; background: var(--primary); }
+
+        .nav-spacer { flex: 1; min-width: 16px; }
+
+        .nav-book-btn {
+            padding: 10px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(255,107,107,0.35);
+        }
+
+        .nav-book-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* ══ 레이아웃 ══ */
+        .page-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* 히어로 */
+        #section-hero {
+            padding: 40px 0 0;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+            align-items: start;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .poster-box {
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            aspect-ratio: 3/4;
+            background: #eee;
+        }
+
+        .poster-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .hero-info { padding-top: 8px; }
+
+        .tag-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
+        .tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tag-genre  { background: #fff0f0; color: var(--primary); }
+        .tag-status { background: #e8f8eb; color: var(--accent2); }
+        .tag-coming { background: #fff8e0; color: #c8960c; }
+        .tag-age    { background: #f0f0ff; color: #6666cc; }
+
+        .perf-title {
+            font-family: 'Nunito', sans-serif;
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .perf-venue {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+
+        .quick-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .quick-card {
+            background: var(--bg3);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+        }
+
+        .quick-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .quick-value { font-size: 14px; font-weight: 700; }
+
+        .hero-divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+        .price-preview { display: flex; align-items: baseline; gap: 8px; }
+
+        .price-from { font-size: 13px; color: var(--text-muted); }
+
+        .price-num {
+            font-family: 'Nunito', sans-serif;
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .price-unit { font-size: 14px; color: var(--text-muted); }
+
+        /* ══ 콘텐츠 + 사이드바 ══ */
+        .content-sidebar-wrap {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 32px;
+            padding: 32px 0 80px;
+            align-items: start;
+            animation: fadeUp 0.5s 0.1s ease both;
+        }
+
+        /* ── 섹션 블록 ── */
+        .section-block {
+            background: var(--bg2);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-block-title {
+            font-family: 'Nunito', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-bar {
+            display: inline-block;
+            width: 5px;
+            height: 22px;
+            background: var(--primary);
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* 캐스팅 */
+        .cast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 20px;
+        }
+
+        .cast-card { text-align: center; }
+
+        .cast-avatar {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: var(--bg3);
+            margin: 0 auto 10px;
+            overflow: hidden;
+            border: 3px solid var(--border);
+        }
+
+        .cast-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .cast-role-label { font-size: 11px; color: var(--primary); font-weight: 700; margin-bottom: 3px; }
+        .cast-name-label { font-size: 13px; font-weight: 600; }
+
+        /* 공연 소개 */
+        .synopsis-text { font-size: 15px; line-height: 2.1; color: #555; font-weight: 300; }
+
+        /* 가격 */
+        .price-table { width: 100%; border-collapse: collapse; }
+
+        .price-table th {
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            padding: 10px 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .price-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .price-table tr:last-child td { border-bottom: none; }
+
+        .price-amount-td {
+            font-family: 'Nunito', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary);
+            text-align: right;
+        }
+
+        /* 지도 */
+        #map {
+            width: 100%;
+            height: 300px;
+            border-radius: var(--radius-sm);
+            background: var(--bg3);
+            overflow: hidden;
+        }
+
+        .map-addr {
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 리뷰 */
+        .review-summary {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            padding: 24px;
+            background: var(--bg3);
+            border-radius: var(--radius-sm);
+            margin-bottom: 24px;
+        }
+
+        .review-score-big {
+            font-family: 'Nunito', sans-serif;
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            text-align: center;
+        }
+
+        .review-stars { font-size: 22px; text-align: center; margin: 4px 0; }
+        .review-count { font-size: 12px; color: var(--text-muted); text-align: center; }
+
+        .bar-rows { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+
+        .bar-row { display: flex; align-items: center; gap: 10px; }
+
+        .bar-lbl { width: 16px; font-size: 12px; color: var(--text-muted); text-align: right; }
+
+        .bar-track {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+        .bar-cnt { font-size: 12px; color: var(--text-muted); width: 24px; }
+
+        .review-list { display: flex; flex-direction: column; gap: 14px; }
+
+        .review-item {
+            padding: 18px;
+            background: var(--bg3);
+            border-radius: var(--radius-sm);
+        }
+
+        .review-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .reviewer-name { font-size: 14px; font-weight: 700; }
+        .review-date   { font-size: 12px; color: var(--text-muted); }
+        .review-star   { color: var(--accent); font-size: 14px; margin-bottom: 6px; }
+        .review-text   { font-size: 14px; color: #555; line-height: 1.7; }
+
+        /* ── 사이드바 ── */
+        .sidebar {
+            position: sticky;
+            top: calc(var(--sticky-h) + 16px);
+        }
+
+        .sidebar-card {
+            background: var(--bg2);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            background: var(--primary);
+            padding: 20px 24px;
+            color: white;
+        }
+
+        .sidebar-title {
+            font-family: 'Nunito', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-sub { font-size: 12px; opacity: 0.85; }
+
+        .sidebar-body { padding: 20px; }
+
+        /* 달력 */
+        .cal-nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .cal-month-label {
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .cal-arrow {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: var(--bg3);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            line-height: 1;
+        }
+
+        .cal-arrow:hover { background: var(--border); }
+
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 4px;
+        }
+
+        .cal-wd {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 4px 0;
+        }
+
+        .cal-wd:first-child { color: #ff6b6b; }
+        .cal-wd:last-child  { color: #6b8cff; }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .cal-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 50%;
+            color: var(--text-muted);
+            cursor: default;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .cal-cell.available {
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .cal-cell.available:hover { background: #fff0f0; color: var(--primary); }
+        .cal-cell.selected        { background: var(--primary) !important; color: white !important; }
+
+        .cal-cell.today::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .cal-cell.selected.today::after { background: white; }
+
+        /* 좌석 정보 */
+        .seat-info { margin-top: 16px; display: none; }
+        .seat-info.show { display: block; animation: fadeUp 0.3s ease both; }
+
+        .selected-date-label {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sub-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .time-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+
+        .time-chip {
+            padding: 6px 14px;
+            background: var(--bg3);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .time-chip:hover            { border-color: var(--primary); color: var(--primary); }
+        .time-chip.active           { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .seat-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+        .seat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--bg3);
+            border-radius: var(--radius-sm);
+        }
+
+        .seat-type { font-size: 13px; font-weight: 600; }
+
+        .seat-right { display: flex; align-items: center; gap: 10px; }
+
+        .seat-remain {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .remain-good { background: #e8f8eb; color: var(--accent2); }
+        .remain-few  { background: #fff8e0; color: #c8960c; }
+        .remain-sold { background: #ffe0e0; color: var(--primary); }
+
+        .seat-price {
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(255,107,107,0.35);
+        }
+
+        .book-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .book-btn:disabled {
+            background: var(--border);
+            color: var(--text-muted);
+            cursor: default;
+            box-shadow: none;
+            transform: none;
+        }
+
+        @media (max-width: 960px) {
+            #section-hero              { grid-template-columns: 1fr; }
+            .poster-box                { max-width: 240px; }
+            .content-sidebar-wrap      { grid-template-columns: 1fr; }
+            .sidebar                   { position: static; }
+            .quick-info                { grid-template-columns: repeat(2, 1fr); }
+        }

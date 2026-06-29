@@ -1,0 +1,78 @@
+/* 기본 레이아웃 */
+body { font-family: 'Pretendard', sans-serif; background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+.container { max-width: 800px;
+             margin: 0 auto; 
+            margin-top: 50px;
+            border: solid;
+        }
+
+/* 섹션 타이틀 */
+h2 { border-left: 4px solid #00ff88; padding-left: 10px; margin-top: 40px; }
+
+.ticketItems{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+}
+
+.artShow{
+    margin: auto;
+}
+
+.concert{
+    margin: auto;
+}
+
+.category-card {
+    flex: 1;
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden; /* 이미지가 밖으로 안 나가게 */
+    height: 350px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+}
+
+.category-card a {
+    text-decoration: none;  
+    display: block;
+}
+
+/* 이미지 영역 */
+.img-box {
+    width: 100%;
+    height: 250px; /* 이미지 높이 조절 */
+    overflow: hidden;
+}
+
+.img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* 호버 효과: 카드 전체가 살짝 올라오고 이미지가 확대됨 */
+.category-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+}
+
+/* 마우스 올렸을 때 이미지 확대 효과 */
+.category-card:hover img {
+    transform: scale(1.1);
+}
+
+/* 텍스트 영역 */
+.text-box {
+    padding: 20px;
+    text-align: center;
+}
+
+
+.category-name {
+    color: #fff;
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+}

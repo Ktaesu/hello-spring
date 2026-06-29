@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/ticket/artTicket.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <h2>연극</h2>
+            <div class="searcArea">
+                <div class="choiceArea">
+                    <button type="button" id="areaModalBtn" class="filter-btn">
+                        지역: <span id="selectedAreaName">전체 지역</span>
+                    </button>
+                    
+                    <button type="button" id="rankModalBtn" class="filter-btn">
+                        정렬: <span id="selectedRankName">일간 랭킹순</span>
+                    </button>
+                </div>
+
+                <div id="areaModal" class="modal">
+                    <div class="modal-content">
+                        <h3>지역 선택</h3>
+                        <div class="grid-layout">
+                            <button class="area-item active" data-code="">전체</button>
+                            <button class="area-item" data-code="11">서울</button>
+                            <button class="area-item" data-code="41|28 ">경기</button>
+                            <button class="area-item" data-code="51">강원</button>
+                            <button class="area-item" data-code="43|44|30|36">충청</button>
+                            <button class="area-item" data-code="45|46|29">전라</button>
+                            <button class="area-item" data-code="47|48|26|27|31">경상</button>
+                            <button class="area-item" data-code="50">제주</button>
+                        </div>
+                        <button class="close-btn">닫기</button>
+                    </div>
+                </div>
+
+                <div id="rankModal" class="modal">
+                    <div class="modal-content">
+                        <h3>정렬 기준</h3>
+                        <div class="grid-layout">
+                            <button class="rank-item active" data-value="daily">일간 랭킹순</button>
+                            <button class="rank-item" data-value="weekly">주간 랭킹순</button>
+                            <button class="rank-item" data-value="monthly">월간 랭킹순</button>
+                            <button class="rank-item" data-value="closing">종료 임박순</button>
+                        </div>
+                        <button class="close-btn">닫기</button>
+                    </div>
+                </div>
+
+                
+            </div>
+            <div class="content" id="performanceList">
+                <a th:href="@{/ticket/detail/{id}(id=${perf.id})}" th:each="perf : ${performances}">
+                    <div class="ticketList">
+                        <div class="artImg">
+                            <img th:src="${perf.imgPath}" alt="전시회 이미지">
+                        </div>
+                        <div class="artInfo">
+                            <div class="artName">
+                                <p th:text="${perf.title}">어쩌구 저쩌구 대충 전시 제목</p>
+                            </div>
+                            <div class="areaInfo">
+                                <div>
+                                    <span th:text="${perf.location}">어쩌구 저쩌구 대충장소</span>
+                                </div>
+                                <div>
+                                    <span th:text="${perf.formattedPeriod}">어쩌구 저쩌구 대충 기간</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <div th:if="${#lists.isEmpty(performances)}" style="text-align: center; color: #888; padding: 50px;">
+                    등록된 전시 데이터가 없습니다.
+                </div>
+            </div>
+
+        </div>
+        <script th:src="@{/js/ticket/artTicket.js}"></script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!dOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Document</title>
+    <link rel="stylesheet" th:href="@{/css/common/header.css}">
+</head>
+<body>
+    <div th:fragment="header">
+        <div class="header">
+            <div class="first">
+                <div class="icon">
+                    <a th:href="@{/}">메인</a>
+                </div>
+                <div class="searchbar" style="position: relative;">
+                    <form id="searchForm" onsubmit="return false;">
+                        <div>
+                            <input type="text" name="keyword" value="" placeholder="검색어를 입력해주세요." autocomplete="off"
+                                   oninput="onSearchInput(this.value)">
+                        </div>
+                    </form>
+                    <!-- 검색 결과 드롭다운 -->
+                    <div id="searchResult" style="
+                        display: none;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        right: 0;
+                        background: white;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        z-index: 9999;
+                        max-height: 300px;
+                        overflow-y: auto;
+                    "></div>
+                </div>
+            </div>
+            <div class="menu">
+                <div>
+                    <a th:href="@{/product/mainProduct}">상품</a>
+                </div>
+                <!-- 로그인 안 했을 때 -->
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/member/login}">로그인</a>
+                </div>
+
+                <!-- 로그인 했을 때 -->
+                <div sec:authorize="isAuthenticated()">
+                    <span th:text="${#authentication.principal.nickname}" style="font-weight: bold; color: blue;"></span>님 환영합니다!
+                    <a th:href="@{/member/logout}">로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

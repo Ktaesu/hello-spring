@@ -1,0 +1,63 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.0'
+	id 'io.spring.dependency-management' version '1.1.5'
+}
+
+group = 'com.ts.demo'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	// Spring Boot 3.2.x ~ 3.3.x 환경이라면 2023.0.1 이상이 안전합니다.
+	set('springCloudVersion', "2023.0.1")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc8'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+	// CoolSMS SDK
+	implementation 'net.nurigo:sdk:4.3.0'
+	// 이메일 발송 라이브러리
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// Thymeleaf에서 Spring Security 기능을 쓰기 위한 확장 라이브러리
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// JWT 관련 라이브러리 (jjwt)
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// OpenFeign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+tasks.named('test') {
+	useJUnitPlatform()
+}

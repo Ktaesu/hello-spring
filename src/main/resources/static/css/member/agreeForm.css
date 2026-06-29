@@ -1,0 +1,22 @@
+textarea{
+ width: 800px;
+ height: 300px;
+}
+
+#use-agree{
+  display: flex;
+}
+
+#personInfo-agree{
+  display: flex;
+}
+
+#all-agree{
+  display: flex;
+}
+
+.agree-btn button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}

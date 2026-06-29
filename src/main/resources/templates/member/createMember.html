@@ -1,0 +1,103 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/member/createMember.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="join-wrapper">
+            <h1>회원정보 입력</h1>
+            <form th:action="@{/member/createMember}" method="post" id="joinForm">
+
+                <div class="form-group">
+                    <label for="memberId">아이디</label>
+                    <div class="input-btn-wrap">
+                        <input type="text" id="memberId" name="memberId" placeholder="아이디 입력" required>
+                        <button type="button" id="btnIdCheck" class="sub-btn">중복확인</button>
+                    </div>
+                    <span id="idCheckMsg" class="msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="memberPwd" name="memberPwd" placeholder="8~16자 영문, 숫자, 특수문자 조합" required>
+                    <span id="pwMsg" class="msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordConfirm">비밀번호 확인</label>
+                    <input type="password" id="passwordConfirm" placeholder="비밀번호 재입력" required>
+                    <span id="pwConfirmMsg" class="msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="memberName">이름</label>
+                    <input type="text" id="memberName" name="memberName" required>
+                    <span class="msg"></span>
+                </div>
+                <div class="form-group">
+                    <label for="nickname">닉네임</label>
+                    <div class="input-btn-wrap">
+                        <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력">
+                        <button type="button" id="btnNicknameCheck" class="sub-btn">중복확인</button>
+                    </div>
+                    <span id="nicknameCheckMsg" class="msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">전화번호</label>
+                    <div class="input-btn-wrap">
+                        <input type="tel" id="phone" name="phone" required>
+                        <button type="button" id="btnPhoneAuth" class="sub-btn">인증번호 전송</button>
+                    </div>
+                    <div id="authCodeWrapper" class="input-btn-wrap" style="display: none; margin-top: 5px;">
+                        <input type="text" id="authCode" placeholder="6자리 입력">
+                        <button type="button" id="btnVerifyCode" class="sub-btn">인증확인</button>
+                    </div>
+                    <span id="phoneMsg" class="msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <div class="input-btn-wrap">
+                        <input type="email" id="email" name="email" placeholder="example@naver.com">
+                        <button type="button" id="btnEmailAuth" class="sub-btn">인증번호 전송</button>
+                    </div>
+                    
+                    <div id="emailAuthWrapper" class="input-btn-wrap" style="display: none; margin-top: 5px;">
+                        <input type="text" id="emailAuthCode" placeholder="이메일 인증번호 입력">
+                        <button type="button" id="btnVerifyEmail" class="sub-btn">인증확인</button>
+                    </div>
+                    
+                    <span id="emailMsg" class="msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="zipcode">주소</label>
+                    <div class="input-btn-wrap">
+                        <input type="text" id="zipcode" name="zipcode" readonly placeholder="우편번호" style="width: 100px;">
+                        <button type="button" id="btnAddress" class="sub-btn">주소 검색</button>
+                    </div>
+                    
+                    <input type="text" id="address" name="address" readonly placeholder="기본 주소" style="margin-top:5px;">
+                    
+                    <input type="text" id="addressDetail" name="addressDetail" placeholder="상세주소 입력" style="margin-top:5px;">
+                    
+                    <span class="msg"></span>
+                </div>
+
+                <div class="join-btn-group">
+                    <button type="submit" id="btnSubmit">가입하기</button>
+                    <button type="button" onclick="history.back()" id="btnBack">이전으로</button>
+                </div>
+            </form>
+        </div>
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+        <script th:src="@{/js/member/createMember.js}"></script>
+    </div>
+
+</body>
+</html>

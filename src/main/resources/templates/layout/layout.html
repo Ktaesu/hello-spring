@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/common/header.css}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <header th:replace="~{common/header :: header}"></header>
+
+    <main layout:fragment="content"></main>
+
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const msg = [[${msg != null ? msg : error}]];
+        if (msg) {
+            alert(msg);
+        }
+        /*]]>*/
+    </script>
+
+    <script th:src="@{/js/common/header.js}"></script>
+</body>
+</html>

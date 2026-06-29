@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title th:text="${performance.prfnm}">공연 상세</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/ticket/detailTicket.css}">
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- ══ STICKY NAV ══ -->
+    <div class="sticky-nav">
+        <div class="sticky-nav-inner">
+            <button class="nav-tab active" onclick="navScroll('section-hero')">공연정보</button>
+            <button class="nav-tab"        onclick="navScroll('section-cast')">캐스팅</button>
+            <button class="nav-tab"        onclick="navScroll('section-synopsis')">공연소개</button>
+            <button class="nav-tab"        onclick="navScroll('section-price')">가격</button>
+            <button class="nav-tab"        onclick="navScroll('section-map')">장소</button>
+            <button class="nav-tab"        onclick="navScroll('section-review')">리뷰</button>
+            <div class="nav-spacer"></div>
+            <button class="nav-book-btn"   onclick="navScroll('sidebar')">🎟 예매하기</button>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+
+        <!-- ══ 히어로 ══ -->
+        <div id="section-hero">
+            <div class="poster-box">
+                <img th:src="${performance.poster}" alt="포스터"
+                     onerror="this.src='/img/no-poster.png'">
+            </div>
+            <div class="hero-info">
+                <div class="tag-row">
+                    <span class="tag tag-genre" th:text="${performance.genrenm}">뮤지컬</span>
+                    <span class="tag"
+                          th:classappend="${performance.prfstate == '공연예정'} ? 'tag-coming' : 'tag-status'"
+                          th:text="${performance.prfstate}">공연중</span>
+                    <span class="tag tag-age" th:text="${performance.prfage}">만 7세 이상</span>
+                </div>
+                <h1 class="perf-title" th:text="${performance.prfnm}">킹키부츠</h1>
+                <p class="perf-venue">📍 <span th:text="${performance.fcltynm}">샤롯데씨어터</span></p>
+
+                <div class="quick-info">
+                    <div class="quick-card">
+                        <div class="quick-label">공연 기간</div>
+                        <div class="quick-value"
+                             th:text="${performance.prfpdfrom + ' ~ ' + performance.prfpdto}">
+                            2026.04.01 ~ 2026.06.30
+                        </div>
+                    </div>
+                    <div class="quick-card">
+                        <div class="quick-label">공연 시간</div>
+                        <div class="quick-value" th:text="${performance.prfruntime}">150분</div>
+                    </div>
+                    <div class="quick-card">
+                        <div class="quick-label">지역</div>
+                        <div class="quick-value" th:text="${performance.area}">서울특별시</div>
+                    </div>
+                </div>
+
+                <div class="hero-divider"></div>
+
+                <div class="price-preview">
+                    <span class="price-from">최저가</span>
+                    <span class="price-num" th:text="${performance.minPrice}">60,000</span>
+                    <span class="price-unit">원부터</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ 콘텐츠 + 사이드바 ══ -->
+        <div class="content-sidebar-wrap">
+            <div class="main-content">
+
+                <!-- 캐스팅 -->
+                <div class="section-block" id="section-cast">
+                    <div class="section-block-title">
+                        <span class="title-bar"></span>캐스팅
+                    </div>
+                    <div class="cast-grid">
+                        <div th:each="c : ${performance.castList}" class="cast-card">
+                            <div class="cast-avatar">
+                                <img th:src="${c.imgUrl}" th:alt="${c.name}"
+                                     onerror="this.style.display='none'">
+                            </div>
+                            <div class="cast-role-label" th:text="${c.role}">주연</div>
+                            <div class="cast-name-label" th:text="${c.name}">홍길동</div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(performance.castList)}"
+                             style="grid-column:1/-1;color:var(--text-muted);font-size:14px;text-align:center;padding:20px;">
+                            캐스팅 정보가 없습니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 공연 소개 -->
+                <div class="section-block" id="section-synopsis">
+                    <div class="section-block-title"><span class="title-bar"></span>공연 소개</div>
+                    <p class="synopsis-text" th:text="${performance.sty}">공연 소개 내용이 여기에 표시됩니다.</p>
+                </div>
+
+                <!-- 가격 -->
+                <div class="section-block" id="section-price">
+                    <div class="section-block-title"><span class="title-bar"></span>가격 안내</div>
+                    <table class="price-table">
+                        <thead>
+                            <tr>
+                                <th>좌석 등급</th>
+                                <th style="text-align:right;">가격</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${performance.priceList}">
+                                <td th:text="${p.seatGrade}">VIP석</td>
+                                <td class="price-amount-td" th:text="${p.price}">170,000원</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(performance.priceList)}">
+                                <td colspan="2"
+                                    style="color:var(--text-muted);text-align:center;padding:20px;">
+                                    가격 정보를 불러오는 중입니다.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 장소 -->
+                <div class="section-block" id="section-map">
+                    <div class="section-block-title"><span class="title-bar"></span>공연 장소</div>
+                    <div id="map"></div>
+                    <p class="map-addr">📍 <span th:text="${performance.adres}">서울특별시 중구 소공동</span></p>
+                </div>
+
+                <!-- 리뷰 -->
+                <div class="section-block" id="section-review">
+                    <div class="section-block-title"><span class="title-bar"></span>관람후기</div>
+
+                    <div class="review-summary">
+                        <div>
+                            <div class="review-score-big">4.8</div>
+                            <div class="review-stars">⭐⭐⭐⭐⭐</div>
+                            <div class="review-count">리뷰 128개</div>
+                        </div>
+                        <div class="bar-rows">
+                            <div class="bar-row">
+                                <span class="bar-lbl">5</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:81%"></div></div>
+                                <span class="bar-cnt">104</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-lbl">4</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:15%"></div></div>
+                                <span class="bar-cnt">19</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-lbl">3</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:4%"></div></div>
+                                <span class="bar-cnt">5</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-lbl">2</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                                <span class="bar-cnt">0</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-lbl">1</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                                <span class="bar-cnt">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="review-list">
+                        <!-- DB 연결 후 -->
+                        <div th:each="r : ${reviews}" th:if="${reviews != null}" class="review-item">
+                            <div class="review-top">
+                                <span class="reviewer-name" th:text="${r.nickname}">닉네임</span>
+                                <span class="review-date"   th:text="${r.createdAt}">2026.04.20</span>
+                            </div>
+                            <div class="review-star">⭐⭐⭐⭐⭐</div>
+                            <div class="review-text" th:text="${r.content}">리뷰 내용</div>
+                        </div>
+                        <!-- 샘플 -->
+                        <div th:if="${reviews == null or #lists.isEmpty(reviews)}" class="review-item">
+                            <div class="review-top">
+                                <span class="reviewer-name">뮤지컬덕후</span>
+                                <span class="review-date">2026.04.20</span>
+                            </div>
+                            <div class="review-star">⭐⭐⭐⭐⭐</div>
+                            <div class="review-text">정말 감동적이었어요! 배우들의 열정이 느껴졌고 무대 연출도 화려했습니다. 꼭 다시 보고 싶어요.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── 사이드바 달력 ── -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-card">
+                    <div class="sidebar-header">
+                        <div class="sidebar-title">🎟 날짜 선택</div>
+                        <div class="sidebar-sub"
+                             th:text="${performance.prfpdfrom + ' ~ ' + performance.prfpdto}">
+                            2026.04.01 ~ 2026.06.30
+                        </div>
+                    </div>
+                    <div class="sidebar-body">
+                        <div class="cal-nav-row">
+                            <button class="cal-arrow" onclick="changeMonth(-1)">‹</button>
+                            <div class="cal-month-label" id="calMonth">2026년 4월</div>
+                            <button class="cal-arrow" onclick="changeMonth(1)">›</button>
+                        </div>
+                        <div class="cal-weekdays">
+                            <div class="cal-wd">일</div><div class="cal-wd">월</div>
+                            <div class="cal-wd">화</div><div class="cal-wd">수</div>
+                            <div class="cal-wd">목</div><div class="cal-wd">금</div>
+                            <div class="cal-wd">토</div>
+                        </div>
+                        <div class="cal-grid" id="calGrid"></div>
+
+                        <div class="seat-info" id="seatInfo">
+                            <div class="selected-date-label" id="selectedDateLabel">📅 날짜 선택</div>
+
+                            <div class="sub-label">시간 선택</div>
+                            <div class="time-chips" id="timeChips"></div>
+
+                            <div class="sub-label">좌석 현황</div>
+                            <div class="seat-rows" id="seatRows"></div>
+
+                            <button class="book-btn" id="bookBtn" disabled>
+                                날짜와 시간을 선택하세요
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 카카오맵 -->
+    <script type="text/javascript" 
+        th:src="|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapKey}&autoload=false|"></script>
+
+    <script th:src="@{/js/ticket/detailTicket.js}"></script>
+</div>
+</body>
+</html>
