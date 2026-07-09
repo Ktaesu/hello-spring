@@ -1,5 +1,7 @@
 package com.ts.demo.hello_spring.member.service;
 
+import com.ts.demo.hello_spring.common.exception.BusinessException;
+import com.ts.demo.hello_spring.common.exception.ErrorCode;
 import com.ts.demo.hello_spring.common.security.jwt.JwtProvider;
 import com.ts.demo.hello_spring.member.dto.LoginRequestDTO;
 import com.ts.demo.hello_spring.member.dto.MemberDTO;
@@ -29,18 +31,16 @@ public class MemberServiceImple implements MemberService{
 
         // 1. 아이디로만 회원을 조회 (Optional 처리)
         Member member = memberRepository.findByMemberId(dto.getMemberId())
-                .orElse(null);
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 2. 회원이 존재하고 + 암호화된 비밀번호가 일치하는지 체크
         // encoder.matches(평문 비밀번호, DB에 저장된 암호화 비밀번호)
-        if (member != null && encoder.matches(dto.getMemberPwd(), member.getMemberPwd())) {
-
-            // 3. DTO 대신 JWT 토큰을 생성해서 반환합니다.
-            return jwtProvider.createToken(member.getMemberId());
+        if (!encoder.matches(dto.getMemberPwd(), member.getMemberPwd())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // 아이디가 없거나 비번이 틀리면 null
-        return null;
+        // 3. DTO 대신 JWT 토큰을 생성해서 반환합니다.
+        return jwtProvider.createToken(member.getMemberId());
     }
 
     //아이디 중복체크
@@ -75,14 +75,8 @@ public class MemberServiceImple implements MemberService{
         String encodedPassword = encoder.encode(rawPassword);
         try {
             // 1. 회원 객체 생성 (MEMBER_NO는 시퀀스로 자동 할당됨)
-            Member member = Member.builder()
-                    .memberId(joinDto.getMemberId())
-                    .memberPwd(encodedPassword)
-                    .memberName(joinDto.getMemberName())
-                    .nickname(joinDto.getNickname())
-                    .phone(joinDto.getPhone())
-                    .email(joinDto.getEmail())
-                    .build();
+            // 정적 팩토리 메서드로 생성 책임을 Member 스스로 갖도록 위임
+            Member member = Member.create(joinDto, encodedPassword);
 
             // 2. 먼저 member를 저장해서 PK(memberNo)를 생성함
             Member savedMember = memberRepository.save(member);

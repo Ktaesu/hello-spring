@@ -1,5 +1,6 @@
 package com.ts.demo.hello_spring.member.controller;
 
+import com.ts.demo.hello_spring.common.exception.BusinessException;
 import com.ts.demo.hello_spring.member.dto.LoginRequestDTO;
 import com.ts.demo.hello_spring.member.dto.LoginResponseDTO;
 import com.ts.demo.hello_spring.member.dto.MemberDTO;
@@ -42,8 +43,11 @@ public class MemberController {
         // 서비스에서 이제 DTO가 아닌 토큰(String)을 받아옵니다.
         String token = memberService.login(dto);
 
-        if(token == null){
-            ra.addFlashAttribute("msg", "아이디 또는 비밀번호가 일치하지 않습니다.");
+        try {
+            token = memberService.login(dto);
+        } catch (BusinessException e) {
+            // 회원 없음/비밀번호 불일치 등은 errorCode로 원인이 명확히 구분됨
+            ra.addFlashAttribute("msg", e.getMessage());
             return "redirect:/loginForm";
         }
 
