@@ -48,6 +48,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/member/**", "/api/auth/**", "/product/api/**").permitAll() // 로그인 없이 허용할 경로
+                        .requestMatchers("/product/**").permitAll()
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 )
 

@@ -19,21 +19,22 @@ public class PerformanceListDto {
     private String genre;
     private String mt20id;
 
-    // 네 번째 인자를 주소(address) 대신 이름(hallName)으로 받습니다.
+    // DB 엔티티용 네 번째 인자를 주소(address) 대신 이름(hallName)으로 받습니다.
     public PerformanceListDto(Performance p, LocalDateTime start, LocalDateTime end, String hallName) {
         this.id = p.getId();
         this.title = p.getTitle();
         this.imgPath = p.getImgPath();
         this.price = p.getPrice();
         this.location = hallName; // 공연장 이름을 location 필드에 매핑
-
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         this.formattedPeriod = (start != null ? start.format(dtf) : "") + " ~ " +
                 (end != null ? end.format(dtf) : "");
     }
 
     // PerformanceListDto.java에 추가
-    public PerformanceListDto(String title, String imgPath, String location, String start, String end) {
+    public PerformanceListDto(String mt20id, String title, String imgPath, String location,
+                              String start, String end) {
+        this.mt20id = mt20id;
         this.title = title;
         this.imgPath = imgPath;
         this.location = location;
@@ -42,7 +43,8 @@ public class PerformanceListDto {
     }
 
     // [추가] 랭킹(BoxOffice) 전용 (파라미터 4개)
-    public PerformanceListDto(String title, String imgPath, String location, String period) {
+    public PerformanceListDto(String mt20id, String title, String imgPath, String location, String period) {
+        this.mt20id = mt20id;
         this.title = title;
         this.imgPath = imgPath;
         this.location = location;
