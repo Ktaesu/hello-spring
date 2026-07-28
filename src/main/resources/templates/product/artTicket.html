@@ -55,7 +55,7 @@
                 
             </div>
             <div class="content" id="performanceList">
-                <a th:href="@{/ticket/detail/{id}(id=${perf.id})}" th:each="perf : ${performances}">
+                <a th:href="@{/product/detail/{mt20id}(mt20id=${perf.mt20id})}" th:each="perf : ${performances}">
                     <div class="ticketList">
                         <div class="artImg">
                             <img th:src="${perf.imgPath}" alt="전시회 이미지">

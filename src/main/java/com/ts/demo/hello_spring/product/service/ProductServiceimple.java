@@ -146,7 +146,7 @@ public class ProductServiceimple implements ProductService {
 
             return response.getBoxOfficeList().stream()
                     .map(item -> new PerformanceListDto(
-                            item.getPrfnm(), item.getPoster(),
+                            item.getMt20id(), item.getPrfnm(), item.getPoster(),
                             item.getPrfplcnm(), item.getPrfpd()
                     ))
                     .collect(Collectors.toList());
@@ -176,11 +176,19 @@ public class ProductServiceimple implements ProductService {
                 if (response == null || response.getPerformances() == null) continue;
 
                 response.getPerformances().stream()
+                        .map(item -> {
+                            log.info("필터 전 — mt20id={}, title={}, prfstate={}",
+                                    item.getId(), item.getTitle(), item.getPrfstate()); // ✅ 필터 전
+                            return item;
+                        })
                         .filter(item -> VALID_STATES.contains(item.getPrfstate()))
-                        .map(item -> new PerformanceListDto(
-                                item.getTitle(), item.getPosterPath(), item.getHallName(),
+                        .map(item -> {
+                            log.info("mt20id={}, title={}", item.getId(), item.getTitle());
+                            return new PerformanceListDto(
+                                item.getId(), item.getTitle(), item.getPosterPath(), item.getHallName(),
                                 item.getStartDate(), item.getEndDate()
-                        ))
+                        );
+                        })
                         .forEach(totalList::add);
 
             } catch (Exception e) {
