@@ -18,12 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Set;
+
 
 @Slf4j
 @Service
@@ -32,14 +29,14 @@ import java.util.Set;
 public class ProductServiceimple implements ProductService {
 
     private final KopisClient kopisClient;
+    private final ProductRepository productRepository;
+
     private final XmlMapper xmlMapper = new XmlMapper(){{
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }};
 
     @Value("${kopis.api.key}")
     private String API_KEY;
-
-    private final ProductRepository productRepository;
 
     // ✅ 날짜 포맷 상수화
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -54,31 +51,18 @@ public class ProductServiceimple implements ProductService {
     @Override
     public List<PerformanceListDto> getFilteredArtList(String areaCode, String rankType) {
         String apiAreaCode = blankToNull(areaCode);
-        boolean isRanking = Set.of("daily", "weekly", "monthly").contains(rankType);
 
-        List<PerformanceListDto> rankingList = isRanking
-                ? getBoxOfficeRanking(apiAreaCode, rankType)
-                : Collections.emptyList();
-
-        List<PerformanceListDto> generalList = getGeneralPerformanceList(apiAreaCode, rankType);
-
-        // 중복 제거 후 통합
-        Set<String> rankingTitles = rankingList.stream()
-                .map(PerformanceListDto::getTitle)
-                .collect(Collectors.toSet());
-
-        List<PerformanceListDto> combined = new ArrayList<>(rankingList);
-        generalList.stream()
-                .filter(item -> !rankingTitles.contains(item.getTitle()))
-                .forEach(combined::add);
-
-        return isRanking ? combined : sortList(combined, rankType);
+        return switch (rankType) {
+            case "daily", "weekly", "monthly" -> getBoxOfficeRanking(apiAreaCode, rankType);
+            case "closing"                    -> getClosingPerformanceList(apiAreaCode);
+            default                           -> getBoxOfficeRanking(apiAreaCode, "daily");
+        };
     }
 
     @Override
     public List<PerformanceListDto> searchPerformances(String keyword) {
         LocalDate now = LocalDate.now();
-        String stdate = now.minusMonths(3).format(DATE_FMT);
+        String stdate = now.format(DATE_FMT);
         String eddate = now.plusMonths(12).format(DATE_FMT);
 
         try {
@@ -90,15 +74,15 @@ public class ProductServiceimple implements ProductService {
             }
 
             return response.getPerformances().stream()
-                    .filter(item -> VALID_STATES.contains(item.getPrfstate()))
-                    .map(item -> new PerformanceListDto(
-                            item.getId(), item.getTitle(), item.getPosterPath(), item.getHallName(),
-                            item.getStartDate(), item.getEndDate(),
+                    .map(item -> PerformanceListDto.ofSearch(
+                            item.getId(), item.getTitle(), item.getPosterPath(),
+                            item.getHallName(), item.getStartDate(), item.getEndDate(),
                             item.getArea(), item.getGenre()
                     ))
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
+            log.error("KOPIS 검색 실패: keyword={}, error={}", keyword, e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -145,21 +129,23 @@ public class ProductServiceimple implements ProductService {
             }
 
             return response.getBoxOfficeList().stream()
-                    .map(item -> new PerformanceListDto(
+                    .map(item -> PerformanceListDto.ofRanking(
                             item.getMt20id(), item.getPrfnm(), item.getPoster(),
                             item.getPrfplcnm(), item.getPrfpd()
                     ))
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            return getGeneralPerformanceList(areaCode, rankType);
+            log.error("박스오피스 조회 실패: {}", e.getMessage());
+            return Collections.emptyList();
+
         }
     }
 
-    private List<PerformanceListDto> getGeneralPerformanceList(String areaCode, String rankType) {
+    private List<PerformanceListDto> getClosingPerformanceList(String areaCode) {
         LocalDate now = LocalDate.now();
-        String stdate = now.minusMonths(3).format(DATE_FMT);
-        String eddate = now.plusMonths(6).format(DATE_FMT);
+        String stdate = now.format(DATE_FMT);
+        String eddate = now.plusDays(14).format(DATE_FMT); // 2주 내 종료 공연
 
         String[] codes = (areaCode != null && !areaCode.isBlank())
                 ? areaCode.split("\\|")
@@ -170,42 +156,29 @@ public class ProductServiceimple implements ProductService {
         for (String code : codes) {
             try {
                 String xml = kopisClient.getPerformanceList(
-                        API_KEY, stdate, eddate, 1, 20, "AAAA", "0102", code);
+                        API_KEY, stdate, eddate, 1, 20, "AAAA", "02", code);
                 KopisResponseDto response = parseXml(xml, KopisResponseDto.class);
 
                 if (response == null || response.getPerformances() == null) continue;
 
                 response.getPerformances().stream()
-                        .map(item -> {
-                            log.info("필터 전 — mt20id={}, title={}, prfstate={}",
-                                    item.getId(), item.getTitle(), item.getPrfstate()); // ✅ 필터 전
-                            return item;
-                        })
-                        .filter(item -> VALID_STATES.contains(item.getPrfstate()))
-                        .map(item -> {
-                            log.info("mt20id={}, title={}", item.getId(), item.getTitle());
-                            return new PerformanceListDto(
-                                item.getId(), item.getTitle(), item.getPosterPath(), item.getHallName(),
-                                item.getStartDate(), item.getEndDate()
-                        );
-                        })
+                        .map(item -> PerformanceListDto.ofGeneral(
+                                item.getId(), item.getTitle(), item.getPosterPath(),
+                                item.getHallName(), item.getStartDate(), item.getEndDate()
+                        ))
                         .forEach(totalList::add);
 
             } catch (Exception e) {
+                log.warn("종료임박 조회 실패 [{}]: {}", code, e.getMessage());
             }
         }
 
-        return totalList.isEmpty() ? Collections.emptyList() : sortList(totalList, rankType);
+        // 종료일 빠른 순 정렬
+        return totalList.stream()
+                .sorted(Comparator.comparing(PerformanceListDto::getEndDate))
+                .collect(Collectors.toList());
     }
 
-    private List<PerformanceListDto> sortList(List<PerformanceListDto> list, String rankType) {
-        if ("closing".equals(rankType)) {
-            return list.stream()
-                    .sorted(Comparator.comparing(PerformanceListDto::getEndDate))
-                    .collect(Collectors.toList());
-        }
-        return list;
-    }
 
     // ✅ XML 파싱 공통 메서드
     private <T> T parseXml(String xml, Class<T> clazz) throws Exception {

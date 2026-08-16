@@ -19,54 +19,62 @@ public class PerformanceListDto {
     private String genre;
     private String mt20id;
 
-    // DB 엔티티용 네 번째 인자를 주소(address) 대신 이름(hallName)으로 받습니다.
+    // ── 핵심 생성자 ──
+    private PerformanceListDto(String mt20id, String title, String imgPath, String location,
+                               String formattedPeriod, String endDate, String area, String genre) {
+        this.mt20id = mt20id;
+        this.title = title;
+        this.imgPath = imgPath;
+        this.location = location;
+        this.formattedPeriod = formattedPeriod;
+        this.endDate = endDate;
+        this.area = area;
+        this.genre = genre;
+    }
+
+    // ── DB 엔티티용 ──
     public PerformanceListDto(Performance p, LocalDateTime start, LocalDateTime end, String hallName) {
         this.id = p.getId();
         this.title = p.getTitle();
         this.imgPath = p.getImgPath();
         this.price = p.getPrice();
-        this.location = hallName; // 공연장 이름을 location 필드에 매핑
+        this.location = hallName;
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         this.formattedPeriod = (start != null ? start.format(dtf) : "") + " ~ " +
                 (end != null ? end.format(dtf) : "");
     }
 
-    // PerformanceListDto.java에 추가
-    public PerformanceListDto(String mt20id, String title, String imgPath, String location,
-                              String start, String end) {
-        this.mt20id = mt20id;
-        this.title = title;
-        this.imgPath = imgPath;
-        this.location = location;
-        this.endDate = end;
-        this.formattedPeriod = start + " ~ " + end;
+    // ── 정적 팩토리 메서드 ──
+
+    // 일반 목록 / 종료임박용
+    public static PerformanceListDto ofGeneral(String mt20id, String title, String imgPath,
+                                               String location, String start, String end) {
+        return new PerformanceListDto(
+                mt20id, title, imgPath, location,
+                start + " ~ " + end, end, null, null
+        );
     }
 
-    // [추가] 랭킹(BoxOffice) 전용 (파라미터 4개)
-    public PerformanceListDto(String mt20id, String title, String imgPath, String location, String period) {
-        this.mt20id = mt20id;
-        this.title = title;
-        this.imgPath = imgPath;
-        this.location = location;
-        this.formattedPeriod = period; // "2026.04.01~2026.05.01" 그대로 저장
-
-        // 정렬용 endDate 추출 (선택 사항: 랭킹은 이미 정렬되어 오므로 비워둬도 됨)
+    // 랭킹(BoxOffice)용
+    public static PerformanceListDto ofRanking(String mt20id, String title, String imgPath,
+                                               String location, String period) {
+        String endDate = null;
         if (period != null && period.contains("~")) {
-            this.endDate = period.split("~")[1].trim().replace(".", "");
+            endDate = period.split("~")[1].trim().replace(".", "");
         }
+        return new PerformanceListDto(
+                mt20id, title, imgPath, location,
+                period, endDate, null, null
+        );
     }
 
-    // ✅ 검색용 생성자 (area, genre 포함)
-    public PerformanceListDto(String mt20id, String title, String imgPath, String location,
-                              String start, String end, String area, String genre) {
-        this.mt20id = mt20id;
-        this.title = title;
-        this.imgPath = imgPath;
-        this.location = location;
-        this.endDate = end;
-        this.formattedPeriod = start + " ~ " + end;
-        this.area = area;
-        this.genre = genre;
+    // 검색용
+    public static PerformanceListDto ofSearch(String mt20id, String title, String imgPath,
+                                              String location, String start, String end,
+                                              String area, String genre) {
+        return new PerformanceListDto(
+                mt20id, title, imgPath, location,
+                start + " ~ " + end, end, area, genre
+        );
     }
-
 }
