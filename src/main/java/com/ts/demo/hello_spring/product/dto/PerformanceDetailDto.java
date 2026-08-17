@@ -2,11 +2,13 @@ package com.ts.demo.hello_spring.product.dto;
 
 import com.ts.demo.hello_spring.common.api.kopisClient.KopisDetailDto;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Slf4j
 public class PerformanceDetailDto {
 
     private String mt20id;
@@ -74,11 +76,6 @@ public class PerformanceDetailDto {
         d.genrenm      = dto.getGenrenm();
         d.prfstate     = dto.getPrfstate();
         d.sty          = dto.getSty();
-        d.adres        = dto.getAdres();
-
-        // 위도/경도 파싱 (null 안전하게)
-        try { d.lat = Double.parseDouble(dto.getLat()); } catch (Exception e) { d.lat = 37.5665; }
-        try { d.lng = Double.parseDouble(dto.getLng()); } catch (Exception e) { d.lng = 126.9780; }
 
         // 가격 파싱 — "VIP석 170,000원, R석 130,000원" 형태
         d.priceList = parsePrices(dto.getPcseguidance());
@@ -126,5 +123,12 @@ public class PerformanceDetailDto {
             }
         }
         return list;
+    }
+
+    // 공연시설 정보 적용
+    public void applyFacility(String adres, String lat, String lng) {
+        this.adres = adres;
+        try { this.lat = Double.parseDouble(lat); } catch (Exception e) { this.lat = 37.5665; }
+        try { this.lng = Double.parseDouble(lng); } catch (Exception e) { this.lng = 126.9780; }
     }
 }

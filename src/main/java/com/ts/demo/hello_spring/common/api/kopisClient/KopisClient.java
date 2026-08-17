@@ -47,4 +47,10 @@ public interface KopisClient {
             @PathVariable("mt20id") String mt20id
     );
 
+    @GetMapping("/prfplc/{mt10id}")
+    String getFacilityDetail(
+            @RequestParam("service") String apiKey,
+            @PathVariable("mt10id") String mt10id
+    );
+
 }

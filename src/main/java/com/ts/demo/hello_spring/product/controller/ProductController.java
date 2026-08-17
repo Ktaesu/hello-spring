@@ -5,6 +5,7 @@ import com.ts.demo.hello_spring.product.dto.PerformanceDetailDto;
 import com.ts.demo.hello_spring.product.dto.PerformanceListDto;
 import com.ts.demo.hello_spring.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,12 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RequestMapping("/product")
 @RequiredArgsConstructor
 @Controller
 public class ProductController {
 
     private final ProductService productService;
+
     @Value("${kakao.map.key:}")
     private String kakaoMapKey;
 
@@ -64,10 +67,10 @@ public class ProductController {
 
     @GetMapping("/detail/{mt20id}")
     public String performanceDetail(
-            @PathVariable String mt20id,
-            Model model) {
+            @PathVariable String mt20id, Model model) {
 
         PerformanceDetailDto performance = productService.getPerformanceDetail(mt20id);
+        log.info("주소(adres): {}", performance.getAdres());
         model.addAttribute("performance", performance);
         model.addAttribute("kakaoMapKey", kakaoMapKey); // ✅ application.yml에서 주입
         model.addAttribute("reviews", List.of());       // 추후 DB 연동

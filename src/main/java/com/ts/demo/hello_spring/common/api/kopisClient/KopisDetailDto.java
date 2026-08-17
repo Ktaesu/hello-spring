@@ -28,4 +28,5 @@ public class KopisDetailDto {
     @JacksonXmlProperty(localName = "lat")      private String lat;         // 위도
     @JacksonXmlProperty(localName = "lot")      private String lng;         // 경도
     @JacksonXmlProperty(localName = "adres")    private String adres;       // 주소
+    @JacksonXmlProperty(localName = "mt10id") private String mt10id; // 공연시설 ID
 }

@@ -244,9 +244,16 @@
 
     <!-- 카카오맵 -->
     <script type="text/javascript" 
-        th:src="|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapKey}&autoload=false|"></script>
+        th:src="|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapKey}&autoload=false&libraries=services|"></script>
 
-    <script th:src="@{/js/ticket/detailTicket.js}"></script>
+        <!-- Thymeleaf 데이터를 JS로 전달 -->
+<script th:inline="javascript">
+    const mapAddr = /*[[${performance.adres}]]*/ '';
+    console.log("주소:", mapAddr);
+</script>
+
+        <script th:src="@{/js/ticket/detailTicket.js}"></script>
+
 </div>
 </body>
 </html>

@@ -22,25 +22,25 @@
         });
 
         // ── 카카오맵 ──
-        const mapLat  = /*[[${performance.lat  != null ? performance.lat  : 37.5665}]]*/ 37.5665;
-        const mapLng  = /*[[${performance.lng  != null ? performance.lng  : 126.9780}]]*/ 126.9780;
+        console.log("주소: ", mapAddr);
 
-        // 브라우저 콘솔에서 확인용 로그
-        console.log("검색된 위도(Lat):", mapLat);
-        console.log("검색된 경도(Lng):", mapLng);
+        kakao.maps.load(() => {
+            const geocoder = new kakao.maps.services.Geocoder();
 
-        try {
-            kakao.maps.load(() => {
-                const map = new kakao.maps.Map(document.getElementById('map'), {
-                    center: new kakao.maps.LatLng(mapLat, mapLng),
-                    level: 4
-                });
-                new kakao.maps.Marker({ map, position: new kakao.maps.LatLng(mapLat, mapLng) });
+            geocoder.addressSearch(mapAddr, (result, status) => {
+                if (status === kakao.maps.services.Status.OK) {
+                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                    const map = new kakao.maps.Map(document.getElementById('map'), {
+                        center: coords,
+                        level: 4
+                    });
+                    new kakao.maps.Marker({ map, position: coords });
+                } else {
+                    document.getElementById('map').innerHTML =
+                        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">지도를 불러올 수 없습니다.</div>';
+                }
             });
-        } catch(e) {
-            document.getElementById('map').innerHTML =
-                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">지도를 불러올 수 없습니다.</div>';
-        }
+        });
 
         // ── 달력 ──
         const prfFrom   = /*[[${performance.prfpdfrom}]]*/ '2026.04.01';

@@ -2,10 +2,7 @@ package com.ts.demo.hello_spring.product.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisBoxOfficeResponseDto;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisClient;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisDetailResponseDto;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisResponseDto;
+import com.ts.demo.hello_spring.common.api.kopisClient.*;
 import com.ts.demo.hello_spring.product.dto.PerformanceDetailDto;
 import com.ts.demo.hello_spring.product.dto.PerformanceListDto;
 import com.ts.demo.hello_spring.product.repository.ProductRepository;
@@ -13,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,12 +49,16 @@ public class ProductServiceimple implements ProductService {
     @Override
     public List<PerformanceListDto> getFilteredArtList(String areaCode, String rankType) {
         String apiAreaCode = blankToNull(areaCode);
+        log.info("[ProductService] getFilteredArtList 호출 - areaCode: {}, rankType: {}", apiAreaCode, rankType);
 
-        return switch (rankType) {
+        List<PerformanceListDto> result =  switch (rankType) {
             case "daily", "weekly", "monthly" -> getBoxOfficeRanking(apiAreaCode, rankType);
             case "closing"                    -> getClosingPerformanceList(apiAreaCode);
             default                           -> getBoxOfficeRanking(apiAreaCode, "daily");
         };
+
+        log.info("[ProductService] 필터링 최종 조회 결과 건수: {}건", result.size());
+        return result;
     }
 
     @Override
@@ -87,6 +89,8 @@ public class ProductServiceimple implements ProductService {
         }
     }
 
+    // 공연 상세 — 1시간 캐싱
+    @Cacheable(value = "performanceDetail", key = "#mt20id")
     @Override
     public PerformanceDetailDto getPerformanceDetail(String mt20id) {
         try {
@@ -97,7 +101,23 @@ public class ProductServiceimple implements ProductService {
                 throw new EntityNotFoundException("공연 정보를 찾을 수 없습니다: " + mt20id);
             }
 
-            return PerformanceDetailDto.from(response.getDetails().get(0));
+            KopisDetailDto detailDto = response.getDetails().get(0);
+            PerformanceDetailDto result = PerformanceDetailDto.from(detailDto);
+
+            try {
+                String facilityXml = kopisClient.getFacilityDetail(API_KEY, detailDto.getMt10id());
+                KopisDetailResponseDto facilityResponse = parseXml(facilityXml, KopisDetailResponseDto.class);
+
+                if (facilityResponse != null && facilityResponse.getDetails() != null
+                        && !facilityResponse.getDetails().isEmpty()) {
+                    KopisDetailDto facility = facilityResponse.getDetails().get(0);
+                    result.applyFacility(facility.getAdres(), facility.getLat(), facility.getLng());
+                }
+            } catch (Exception e) {
+                log.warn("공연시설 정보 조회 실패: mt10id={}", detailDto.getMt10id());
+            }
+
+            return result;
 
         } catch (EntityNotFoundException e) {
             throw e;
@@ -111,6 +131,7 @@ public class ProductServiceimple implements ProductService {
     // Private — 내부 로직
     // ============================================================
 
+    // 박스오피스 — 1시간 캐싱
     private List<PerformanceListDto> getBoxOfficeRanking(String areaCode, String rankType) {
         LocalDate now = LocalDate.now();
         String eddate = now.minusDays(1).format(DATE_FMT);
@@ -122,6 +143,10 @@ public class ProductServiceimple implements ProductService {
 
         try {
             String xml = kopisClient.getBoxOffice(API_KEY, stdate, eddate, "AAAA", areaCode);
+
+            // ✅ KOPIS가 보낸 실제 XML 데이터 확인용 로그 추가
+            log.info("=== KOPIS 박스오피스 응답 원본 XML ===\n{}", xml);
+
             KopisBoxOfficeResponseDto response = parseXml(xml, KopisBoxOfficeResponseDto.class);
 
             if (response == null || response.getBoxOfficeList() == null) {
