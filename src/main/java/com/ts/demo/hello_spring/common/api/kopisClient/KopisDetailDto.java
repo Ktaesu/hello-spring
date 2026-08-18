@@ -1,9 +1,12 @@
 package com.ts.demo.hello_spring.common.api.kopisClient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -29,4 +32,8 @@ public class KopisDetailDto {
     @JacksonXmlProperty(localName = "lot")      private String lng;         // 경도
     @JacksonXmlProperty(localName = "adres")    private String adres;       // 주소
     @JacksonXmlProperty(localName = "mt10id") private String mt10id; // 공연시설 ID
+    // 소개 이미지
+    @JacksonXmlProperty(localName = "styurls")
+    @JacksonXmlElementWrapper(localName = "styurls")
+    private List<String> styurls;
 }

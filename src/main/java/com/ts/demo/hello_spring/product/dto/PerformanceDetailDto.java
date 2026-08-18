@@ -28,6 +28,7 @@ public class PerformanceDetailDto {
     private double lat;
     private double lng;
     private String minPrice;
+    private List<String> styurls = new ArrayList<>();
 
     // 가격 파싱용 내부 클래스
     @Getter
@@ -76,6 +77,10 @@ public class PerformanceDetailDto {
         d.genrenm      = dto.getGenrenm();
         d.prfstate     = dto.getPrfstate();
         d.sty          = dto.getSty();
+        d.styurls = dto.getStyurls() != null ? dto.getStyurls() : new ArrayList<>();
+        log.info("소개 이미지 개수={}, urls={}",
+                dto.getStyurls() != null ? dto.getStyurls().size() : 0,
+                dto.getStyurls());
 
         // 가격 파싱 — "VIP석 170,000원, R석 130,000원" 형태
         d.priceList = parsePrices(dto.getPcseguidance());

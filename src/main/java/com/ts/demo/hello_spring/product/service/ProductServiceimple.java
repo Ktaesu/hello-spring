@@ -11,9 +11,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -64,11 +69,34 @@ public class ProductServiceimple implements ProductService {
     @Override
     public List<PerformanceListDto> searchPerformances(String keyword) {
         LocalDate now = LocalDate.now();
-        String stdate = now.format(DATE_FMT);
+        String stdate = now.minusMonths(3).format(DATE_FMT);
         String eddate = now.plusMonths(12).format(DATE_FMT);
 
         try {
-            String xml = kopisClient.searchPerformanceByName(API_KEY, keyword, stdate, eddate, 1, 10);
+            // ✅ Feign 대신 RestTemplate으로 직접 호출 (한글 인코딩 문제 해결)
+            String url = "http://www.kopis.or.kr/openApi/restful/pblprfr"
+                    + "?service=" + API_KEY
+                    + "&shprfnm=" + URLEncoder.encode(keyword, StandardCharsets.UTF_8)
+                    + "&stdate=" + stdate
+                    + "&eddate=" + eddate
+                    + "&cpage=1&rows=10";
+
+            log.info("검색 URL: {}", url);  // ✅ 여기
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            // ✅ UTF-8 인코딩 설정 추가
+            restTemplate.getMessageConverters()
+                    .forEach(converter -> {
+                        if (converter instanceof StringHttpMessageConverter stringConverter) {
+                            stringConverter.setDefaultCharset(StandardCharsets.UTF_8);
+                        }
+                    });
+            
+            String xml = restTemplate.getForObject(URI.create(url), String.class);
+
+            log.info("XML 응답: {}", xml);  // ✅ 여기
+
             KopisResponseDto response = parseXml(xml, KopisResponseDto.class);
 
             if (response == null || response.getPerformances() == null) {

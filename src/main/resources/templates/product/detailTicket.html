@@ -101,7 +101,18 @@
                 <!-- 공연 소개 -->
                 <div class="section-block" id="section-synopsis">
                     <div class="section-block-title"><span class="title-bar"></span>공연 소개</div>
-                    <p class="synopsis-text" th:text="${performance.sty}">공연 소개 내용이 여기에 표시됩니다.</p>
+
+                    <!-- 소개 이미지 -->
+                <div th:if="${not #lists.isEmpty(performance.styurls)}"
+                    style="display:flex; flex-direction:column; gap:12px;">
+                    <img th:each="url : ${performance.styurls}"
+                        th:src="${url}"
+                        style="width:100%; border-radius:8px;"
+                        alt="공연 소개 이미지">
+                </div>
+                    <!-- 이미지도 없을 때 -->
+                <p th:if="${#lists.isEmpty(performance.styurls)}"
+                class="synopsis-text">공연 소개 정보가 없습니다.</p>
                 </div>
 
                 <!-- 가격 -->
