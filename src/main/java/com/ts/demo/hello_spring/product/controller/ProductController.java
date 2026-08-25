@@ -7,6 +7,7 @@ import com.ts.demo.hello_spring.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -76,5 +77,18 @@ public class ProductController {
         model.addAttribute("reviews", List.of());       // 추후 DB 연동
 
         return "product/detailTicket";
+    }
+
+    // ProductController.java 내부에 추가
+    @GetMapping("/api/schedules/{mt20id}")
+    @ResponseBody
+    public ResponseEntity<List<String>> getPerformanceSchedules(
+            @PathVariable String mt20id,
+            @RequestParam int year,
+            @RequestParam int month) {
+
+        // Service에서 해당 공연, 해당 연/월의 예매 가능 날짜 목록 조회
+        List<String> availableDates = productService.getAvailableDates(mt20id, year, month);
+        return ResponseEntity.ok(availableDates);
     }
 }

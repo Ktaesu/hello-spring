@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -92,7 +93,7 @@ public class ProductServiceimple implements ProductService {
                             stringConverter.setDefaultCharset(StandardCharsets.UTF_8);
                         }
                     });
-            
+
             String xml = restTemplate.getForObject(URI.create(url), String.class);
 
             log.info("XML 응답: {}", xml);  // ✅ 여기
@@ -230,6 +231,63 @@ public class ProductServiceimple implements ProductService {
         return totalList.stream()
                 .sorted(Comparator.comparing(PerformanceListDto::getEndDate))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getAvailableDates(String mt20id, int year, int month) {
+        // 1. 캐싱된 공연 상세 정보 가져오기
+        PerformanceDetailDto detail = getPerformanceDetail(mt20id);
+
+
+        // 2. KOPIS 날짜 포맷(yyyy.MM.dd)을 LocalDate로 변환
+        DateTimeFormatter kopisFmt = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        LocalDate startDate = LocalDate.parse(detail.getPrfpdfrom(), kopisFmt);
+        LocalDate endDate = LocalDate.parse(detail.getPrfpdto(), kopisFmt);
+
+        // 3. 달력에서 요청한 월의 시작일과 종료일 계산
+        LocalDate queryMonthStart = LocalDate.of(year, month, 1);
+        LocalDate queryMonthEnd = queryMonthStart.withDayOfMonth(queryMonthStart.lengthOfMonth());
+
+        // 4. 실제 공연 기간과 달력 월의 교집합(겹치는 기간) 산출
+        LocalDate actualStart = startDate.isAfter(queryMonthStart) ? startDate : queryMonthStart;
+        LocalDate actualEnd = endDate.isBefore(queryMonthEnd) ? endDate : queryMonthEnd;
+
+        List<String> availableDates = new ArrayList<>();
+
+        // 달력 월에 공연이 아예 없는 경우 빈 리스트 반환
+        if (actualStart.isAfter(actualEnd)) {
+            return availableDates;
+        }
+
+        // 5. KOPIS의 dtguidance(공연안내) 텍스트를 기반으로 정기 휴무일 파악
+        // 예: "화요일 ~ 금요일(20:00), 토요일(15:00,19:00), 일요일(15:00), 월요일 휴무"
+        String guidance = detail.getDtguidance() != null ? detail.getDtguidance() : "";
+
+        // 📍 [확인용 로그] KOPIS에서 가져온 dtguidance 원본 값 출력
+        System.out.println("==========================================");
+        System.out.println("[KOPIS ID] : " + mt20id);
+        System.out.println("[dtguidance 원본값] : " + detail.getDtguidance());
+        System.out.println("==========================================");
+
+        // 대부분의 연극/뮤지컬은 월요일 휴무이므로, 월요일 휴무 여부 체크
+        boolean isMondayClosed = guidance.contains("월요일 휴무") || !guidance.contains("월요일");
+        boolean isTuesdayClosed = guidance.contains("화요일 휴무");
+        // 필요에 따라 수/목/금 등 추가 가능
+
+        // 6. 유효한 날짜만 리스트에 YYYY-MM-DD 형태로 추가
+        for (LocalDate date = actualStart; !date.isAfter(actualEnd); date = date.plusDays(1)) {
+
+            // 정기 휴무일 걸러내기
+            if (isMondayClosed && date.getDayOfWeek() == DayOfWeek.MONDAY) continue;
+            if (isTuesdayClosed && date.getDayOfWeek() == DayOfWeek.TUESDAY) continue;
+
+            // KOPIS에 공휴일 특별 편성이 텍스트로 섞여있는 경우 정교한 파싱이 어렵기 때문에
+            // 기본적으로 기간 + 휴무요일 필터링만 거쳐도 달력 UI로 쓰기 충분합니다.
+
+            availableDates.add(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+
+        return availableDates;
     }
 
 

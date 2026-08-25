@@ -41,6 +41,9 @@ public class Member {
     @Column(name = "EMAIL")
     private String email;
 
+    @Column(name = "ROLE")
+    private String role;
+
     // 회원이 저장될 때 주소도 함께 저장되도록 Cascade 설정
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberAddress> addresses = new ArrayList<>();

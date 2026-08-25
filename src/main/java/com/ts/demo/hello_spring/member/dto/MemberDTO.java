@@ -19,6 +19,7 @@ public class MemberDTO {
         private String zipcode;        // 추가됨
         private String address;
         private String addressDetail;
+        private String role;
     }
 
 }

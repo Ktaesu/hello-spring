@@ -13,4 +13,6 @@ public interface ProductService {
     List<PerformanceListDto> searchPerformances(String keyword);
 
     PerformanceDetailDto getPerformanceDetail(String mt20id);
+
+    List<String> getAvailableDates(String mt20id, int year, int month);
 }

@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/member/**", "/api/auth/**", "/product/api/**").permitAll() // 로그인 없이 허용할 경로
                         .requestMatchers("/product/**").permitAll()
+                        // 관리자만 접근 가능
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 )
 

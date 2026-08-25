@@ -19,6 +19,7 @@ public class PerformanceDetailDto {
     private String prfruntime;
     private String prfage;
     private String pcseguidance;
+    private String dtguidance; // ✅ 공연시간/요일 정보 필드 추가
     private String poster;
     private String area;
     private String genrenm;
@@ -72,6 +73,7 @@ public class PerformanceDetailDto {
         d.prfruntime   = dto.getPrfruntime();
         d.prfage       = dto.getPrfage();
         d.pcseguidance = dto.getPcseguidance();
+        d.dtguidance   = dto.getDtguidance(); // ✅ dtguidance 매핑 추가
         d.poster       = dto.getPoster();
         d.area         = dto.getArea();
         d.genrenm      = dto.getGenrenm();

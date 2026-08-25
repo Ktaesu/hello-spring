@@ -22,6 +22,8 @@ public class KopisDetailDto {
     @JacksonXmlProperty(localName = "prfcrew")  private String prfcrew;     // 제작진
     @JacksonXmlProperty(localName = "prfruntime") private String prfruntime; // 공연시간
     @JacksonXmlProperty(localName = "prfage")   private String prfage;      // 관람연령
+    // ✅ 공연시간/요일 안내 XML 태그 매핑 (<dtguidance>...</dtguidance>)
+    @JacksonXmlProperty(localName = "dtguidance") private String dtguidance;
     @JacksonXmlProperty(localName = "pcseguidance") private String pcseguidance; // 가격
     @JacksonXmlProperty(localName = "poster")   private String poster;      // 포스터URL
     @JacksonXmlProperty(localName = "area")     private String area;        // 지역

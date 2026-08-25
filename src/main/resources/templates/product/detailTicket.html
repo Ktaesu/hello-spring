@@ -103,13 +103,13 @@
                     <div class="section-block-title"><span class="title-bar"></span>공연 소개</div>
 
                     <!-- 소개 이미지 -->
-                <div th:if="${not #lists.isEmpty(performance.styurls)}"
-                    style="display:flex; flex-direction:column; gap:12px;">
-                    <img th:each="url : ${performance.styurls}"
-                        th:src="${url}"
-                        style="width:100%; border-radius:8px;"
-                        alt="공연 소개 이미지">
-                </div>
+                    <div th:if="${not #lists.isEmpty(performance.styurls)}"
+                        style="display:flex; flex-direction:column; gap:12px;">
+                        <img th:each="url : ${performance.styurls}"
+                            th:src="${url}"
+                            style="width:100%; border-radius:8px;"
+                            alt="공연 소개 이미지">
+                    </div>
                     <!-- 이미지도 없을 때 -->
                 <p th:if="${#lists.isEmpty(performance.styurls)}"
                 class="synopsis-text">공연 소개 정보가 없습니다.</p>
@@ -261,6 +261,16 @@
 <script th:inline="javascript">
     const mapAddr = /*[[${performance.adres}]]*/ '';
     console.log("주소:", mapAddr);
+</script>
+
+<script th:inline="javascript">
+    window.PERFORMANCE_DATA = {
+        mt20id: /*[[${performance?.mt20id}]]*/ '',
+        prfpdfrom: /*[[${performance?.prfpdfrom}]]*/ '',
+        prfpdto: /*[[${performance?.prfpdto}]]*/ '',
+        adres: /*[[${performance?.adres}]]*/ '',
+        fcltynm: /*[[${performance?.fcltynm}]]*/ ''
+    };
 </script>
 
         <script th:src="@{/js/ticket/detailTicket.js}"></script>
