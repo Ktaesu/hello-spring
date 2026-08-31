@@ -22,29 +22,31 @@
         });
 
         // ── 카카오맵 ──
-        const mapLat  = /*[[${performance.lat  != null ? performance.lat  : 37.5665}]]*/ 37.5665;
-        const mapLng  = /*[[${performance.lng  != null ? performance.lng  : 126.9780}]]*/ 126.9780;
+        console.log("주소: ", mapAddr);
 
-        // 브라우저 콘솔에서 확인용 로그
-        console.log("검색된 위도(Lat):", mapLat);
-        console.log("검색된 경도(Lng):", mapLng);
+        kakao.maps.load(() => {
+            const geocoder = new kakao.maps.services.Geocoder();
 
-        try {
-            kakao.maps.load(() => {
-                const map = new kakao.maps.Map(document.getElementById('map'), {
-                    center: new kakao.maps.LatLng(mapLat, mapLng),
-                    level: 4
-                });
-                new kakao.maps.Marker({ map, position: new kakao.maps.LatLng(mapLat, mapLng) });
+            geocoder.addressSearch(mapAddr, (result, status) => {
+                if (status === kakao.maps.services.Status.OK) {
+                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                    const map = new kakao.maps.Map(document.getElementById('map'), {
+                        center: coords,
+                        level: 4
+                    });
+                    new kakao.maps.Marker({ map, position: coords });
+                } else {
+                    document.getElementById('map').innerHTML =
+                        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">지도를 불러올 수 없습니다.</div>';
+                }
             });
-        } catch(e) {
-            document.getElementById('map').innerHTML =
-                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">지도를 불러올 수 없습니다.</div>';
-        }
+        });
 
         // ── 달력 ──
+        const performance = window.PERFORMANCE_DATA;
         const prfFrom   = /*[[${performance.prfpdfrom}]]*/ '2026.04.01';
         const prfTo     = /*[[${performance.prfpdto}]]*/ '2026.12.31';
+        const mt20id    = performance.mt20id; // ✅ KOPIS 공연 ID 추가
         const parseDS   = s => { const [y,m,d] = s.split('.').map(Number); return new Date(y,m-1,d); };
         const startDate = parseDS(prfFrom);
         const endDate   = parseDS(prfTo);
@@ -60,11 +62,26 @@
             { type:'S석',    remain:  0, price:'100,000원', cls:'remain-sold' },
         ];
 
-        function renderCal() {
+        async function renderCal() {
+            console.log("=== renderCal 함수 실행됨 ==="); // 📍 1. 함수 실행 확인
+            console.log("mt20id 값:", mt20id);            // 📍 2. mt20id가 비어있진 않은지 확인
             const grid  = document.getElementById('calGrid');
             const today = new Date();
             document.getElementById('calMonth').textContent = `${curYear}년 ${curMonth+1}월`;
             grid.innerHTML = '';
+
+            // ✅ 백엔드 API 호출: 해당 월의 실제 공연 스케줄 날짜(YYYY-MM-DD) 리스트 가져오기
+            let availableDates = [];
+            if (mt20id) {
+                try {
+                    const response = await fetch(`/product/api/schedules/${mt20id}?year=${curYear}&month=${curMonth + 1}`);
+                    if (response.ok) {
+                        availableDates = await response.json(); // 예: ['2026-08-20', '2026-08-21']
+                    }
+                } catch (error) {
+                    console.error("공연 스케줄 API 호출 실패:", error);
+                }
+            }
 
             const firstDay = new Date(curYear, curMonth, 1).getDay();
             const lastDay  = new Date(curYear, curMonth+1, 0).getDate();
@@ -81,15 +98,27 @@
                 el.textContent = d;
                 el.className   = 'cal-cell';
 
+                // ✅ YYYY-MM-DD 포맷팅 (백엔드 응답 리스트와 비교용)
+                const formattedMonth = String(curMonth + 1).padStart(2, '0');
+                const formattedDay   = String(d).padStart(2, '0');
+                const dateStr        = `${curYear}-${formattedMonth}-${formattedDay}`;
+
                 const inRange = date >= startDate && date <= endDate;
                 const isToday = date.toDateString() === today.toDateString();
                 const isSel   = selDate && date.toDateString() === selDate.toDateString();
+                const isPast  = date < today && !isToday; // ✅ 오늘 이전 날짜
+                const hasSchedule = availableDates.includes(dateStr); // ✅ KOPIS 휴무일 반영 여부
 
-                if (inRange) el.classList.add('available');
+                // ✅ 최종 예매 가능 조건: 공연기간 내 + 과거 제외 + 백엔드 스케줄 존재
+                const isAvailable = inRange && !isPast && hasSchedule;
+
+                if (inRange && !isPast) el.classList.add('available'); // ✅ 과거 제외
                 if (isToday) el.classList.add('today');
                 if (isSel)   el.classList.add('selected');
+                if (isPast)   el.classList.add('past');  // ✅ 과거 스타일
 
-                if (inRange) el.onclick = () => onDateSelect(date, d);
+                if (inRange && !isPast) el.onclick = () => onDateSelect(date, d); // ✅ 과거 클릭 방지
+
                 grid.appendChild(el);
             }
         }

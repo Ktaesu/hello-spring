@@ -1,0 +1,348 @@
+<!dOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="admin-container">
+
+            <!-- =========================
+                사이드바
+            ========================== -->
+            <aside class="sidebar">
+
+                <div class="logo">
+                    🎫 TICKET ADMIN
+                </div>
+
+                <nav>
+
+                    <a href="/admin" class="menu active">
+                        <span>📊</span>
+                        대시보드
+                    </a>
+
+                    <a href="/admin/performance" class="menu">
+                        <span>🎭</span>
+                        공연 관리
+                    </a>
+
+                    <a href="/admin/schedule" class="menu">
+                        <span>📅</span>
+                        회차 관리
+                    </a>
+
+                    <a href="/admin/seat" class="menu">
+                        <span>💺</span>
+                        좌석 관리
+                    </a>
+
+                </nav>
+
+                <div class="sidebar-bottom">
+
+                    <a href="/" class="menu">
+                        <span>🏠</span>
+                        사이트로 이동
+                    </a>
+
+                    <button id="logoutBtn" class="logout-btn">
+                        로그아웃
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+            <!-- =========================
+                메인
+            ========================== -->
+
+            <main class="main">
+
+                <header class="top-header">
+
+                    <div>
+                        <h1>대시보드</h1>
+                        <p>티켓 예매 시스템 관리</p>
+                    </div>
+
+                    <div class="admin-info">
+                        <span class="admin-badge">ADMIN</span>
+                        <span th:text="${memberName}">관리자</span>
+                    </div>
+
+                </header>
+
+
+                <!-- =========================
+                    통계
+                ========================== -->
+
+                <section class="statistics">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">🎭</div>
+
+                        <div>
+                            <p>등록 공연</p>
+                            <strong>3</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">📅</div>
+
+                        <div>
+                            <p>등록 회차</p>
+                            <strong>24</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">💺</div>
+
+                        <div>
+                            <p>전체 좌석</p>
+                            <strong>120</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">🎟️</div>
+
+                        <div>
+                            <p>오늘 예매</p>
+                            <strong>18</strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                    빠른 메뉴
+                ========================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div>
+                            <h2>빠른 관리</h2>
+                            <p>관리할 항목을 선택하세요.</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-menu">
+
+                        <a href="/admin/performance" class="quick-card">
+
+                            <div class="quick-icon">
+                                🎭
+                            </div>
+
+                            <div>
+                                <h3>공연 관리</h3>
+                                <p>공연 등록 및 수정</p>
+                            </div>
+
+                            <span>→</span>
+
+                        </a>
+
+
+                        <a href="/admin/schedule" class="quick-card">
+
+                            <div class="quick-icon">
+                                📅
+                            </div>
+
+                            <div>
+                                <h3>회차 관리</h3>
+                                <p>공연 날짜와 시간 관리</p>
+                            </div>
+
+                            <span>→</span>
+
+                        </a>
+
+
+                        <a href="/admin/seat" class="quick-card">
+
+                            <div class="quick-icon">
+                                💺
+                            </div>
+
+                            <div>
+                                <h3>좌석 관리</h3>
+                                <p>좌석 및 가격 설정</p>
+                            </div>
+
+                            <span>→</span>
+
+                        </a>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                    최근 공연
+                ========================== -->
+
+                <section class="section">
+
+                    <div class="section-header">
+
+                        <div>
+                            <h2>등록된 공연</h2>
+                            <p>현재 DB에 등록된 공연입니다.</p>
+                        </div>
+
+                        <a href="/admin/performance"
+                        class="more-btn">
+                            전체보기
+                        </a>
+
+                    </div>
+
+
+                    <div class="performance-table">
+
+                        <table>
+
+                            <thead>
+
+                            <tr>
+                                <th>공연명</th>
+                                <th>공연장</th>
+                                <th>공연 기간</th>
+                                <th>상태</th>
+                            </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                            <tr>
+
+                                <td>
+                                    <div class="performance-name">
+                                        <div class="poster-placeholder">
+                                            🎭
+                                        </div>
+
+                                        <strong>라이온 킹</strong>
+                                    </div>
+                                </td>
+
+                                <td>예술의전당</td>
+
+                                <td>
+                                    2026.09.01 ~ 2026.12.31
+                                </td>
+
+                                <td>
+                                    <span class="status open">
+                                        판매중
+                                    </span>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    <div class="performance-name">
+
+                                        <div class="poster-placeholder">
+                                            🎭
+                                        </div>
+
+                                        <strong>위키드</strong>
+
+                                    </div>
+                                </td>
+
+                                <td>블루스퀘어</td>
+
+                                <td>
+                                    2026.09.10 ~ 2026.11.30
+                                </td>
+
+                                <td>
+                                    <span class="status open">
+                                        판매중
+                                    </span>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="performance-name">
+
+                                        <div class="poster-placeholder">
+                                            🎭
+                                        </div>
+
+                                        <strong>오페라의 유령</strong>
+
+                                    </div>
+
+                                </td>
+
+                                <td>샤롯데씨어터</td>
+
+                                <td>
+                                    2026.10.01 ~ 2027.01.31
+                                </td>
+
+                                <td>
+                                    <span class="status ready">
+                                        준비중
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+            </main>
+        </div>
+        <script th:src="@{/js/admin/admin.js}"></script>
+    </div>
+</body>
+</html>

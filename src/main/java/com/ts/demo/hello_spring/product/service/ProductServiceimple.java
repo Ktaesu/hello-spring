@@ -2,10 +2,7 @@ package com.ts.demo.hello_spring.product.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisBoxOfficeResponseDto;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisClient;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisDetailResponseDto;
-import com.ts.demo.hello_spring.common.api.kopisClient.KopisResponseDto;
+import com.ts.demo.hello_spring.common.api.kopisClient.*;
 import com.ts.demo.hello_spring.product.dto.PerformanceDetailDto;
 import com.ts.demo.hello_spring.product.dto.PerformanceListDto;
 import com.ts.demo.hello_spring.product.repository.ProductRepository;
@@ -13,17 +10,21 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Set;
+
 
 @Slf4j
 @Service
@@ -32,14 +33,14 @@ import java.util.Set;
 public class ProductServiceimple implements ProductService {
 
     private final KopisClient kopisClient;
+    private final ProductRepository productRepository;
+
     private final XmlMapper xmlMapper = new XmlMapper(){{
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }};
 
     @Value("${kopis.api.key}")
     private String API_KEY;
-
-    private final ProductRepository productRepository;
 
     // ✅ 날짜 포맷 상수화
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -54,25 +55,16 @@ public class ProductServiceimple implements ProductService {
     @Override
     public List<PerformanceListDto> getFilteredArtList(String areaCode, String rankType) {
         String apiAreaCode = blankToNull(areaCode);
-        boolean isRanking = Set.of("daily", "weekly", "monthly").contains(rankType);
+        log.info("[ProductService] getFilteredArtList 호출 - areaCode: {}, rankType: {}", apiAreaCode, rankType);
 
-        List<PerformanceListDto> rankingList = isRanking
-                ? getBoxOfficeRanking(apiAreaCode, rankType)
-                : Collections.emptyList();
+        List<PerformanceListDto> result =  switch (rankType) {
+            case "daily", "weekly", "monthly" -> getBoxOfficeRanking(apiAreaCode, rankType);
+            case "closing"                    -> getClosingPerformanceList(apiAreaCode);
+            default                           -> getBoxOfficeRanking(apiAreaCode, "daily");
+        };
 
-        List<PerformanceListDto> generalList = getGeneralPerformanceList(apiAreaCode, rankType);
-
-        // 중복 제거 후 통합
-        Set<String> rankingTitles = rankingList.stream()
-                .map(PerformanceListDto::getTitle)
-                .collect(Collectors.toSet());
-
-        List<PerformanceListDto> combined = new ArrayList<>(rankingList);
-        generalList.stream()
-                .filter(item -> !rankingTitles.contains(item.getTitle()))
-                .forEach(combined::add);
-
-        return isRanking ? combined : sortList(combined, rankType);
+        log.info("[ProductService] 필터링 최종 조회 결과 건수: {}건", result.size());
+        return result;
     }
 
     @Override
@@ -82,7 +74,30 @@ public class ProductServiceimple implements ProductService {
         String eddate = now.plusMonths(12).format(DATE_FMT);
 
         try {
-            String xml = kopisClient.searchPerformanceByName(API_KEY, keyword, stdate, eddate, 1, 10);
+            // ✅ Feign 대신 RestTemplate으로 직접 호출 (한글 인코딩 문제 해결)
+            String url = "http://www.kopis.or.kr/openApi/restful/pblprfr"
+                    + "?service=" + API_KEY
+                    + "&shprfnm=" + URLEncoder.encode(keyword, StandardCharsets.UTF_8)
+                    + "&stdate=" + stdate
+                    + "&eddate=" + eddate
+                    + "&cpage=1&rows=10";
+
+            log.info("검색 URL: {}", url);  // ✅ 여기
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            // ✅ UTF-8 인코딩 설정 추가
+            restTemplate.getMessageConverters()
+                    .forEach(converter -> {
+                        if (converter instanceof StringHttpMessageConverter stringConverter) {
+                            stringConverter.setDefaultCharset(StandardCharsets.UTF_8);
+                        }
+                    });
+
+            String xml = restTemplate.getForObject(URI.create(url), String.class);
+
+            log.info("XML 응답: {}", xml);  // ✅ 여기
+
             KopisResponseDto response = parseXml(xml, KopisResponseDto.class);
 
             if (response == null || response.getPerformances() == null) {
@@ -90,19 +105,21 @@ public class ProductServiceimple implements ProductService {
             }
 
             return response.getPerformances().stream()
-                    .filter(item -> VALID_STATES.contains(item.getPrfstate()))
-                    .map(item -> new PerformanceListDto(
-                            item.getId(), item.getTitle(), item.getPosterPath(), item.getHallName(),
-                            item.getStartDate(), item.getEndDate(),
+                    .map(item -> PerformanceListDto.ofSearch(
+                            item.getId(), item.getTitle(), item.getPosterPath(),
+                            item.getHallName(), item.getStartDate(), item.getEndDate(),
                             item.getArea(), item.getGenre()
                     ))
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
+            log.error("KOPIS 검색 실패: keyword={}, error={}", keyword, e.getMessage());
             return Collections.emptyList();
         }
     }
 
+    // 공연 상세 — 1시간 캐싱
+    @Cacheable(value = "performanceDetail", key = "#mt20id")
     @Override
     public PerformanceDetailDto getPerformanceDetail(String mt20id) {
         try {
@@ -113,7 +130,23 @@ public class ProductServiceimple implements ProductService {
                 throw new EntityNotFoundException("공연 정보를 찾을 수 없습니다: " + mt20id);
             }
 
-            return PerformanceDetailDto.from(response.getDetails().get(0));
+            KopisDetailDto detailDto = response.getDetails().get(0);
+            PerformanceDetailDto result = PerformanceDetailDto.from(detailDto);
+
+            try {
+                String facilityXml = kopisClient.getFacilityDetail(API_KEY, detailDto.getMt10id());
+                KopisDetailResponseDto facilityResponse = parseXml(facilityXml, KopisDetailResponseDto.class);
+
+                if (facilityResponse != null && facilityResponse.getDetails() != null
+                        && !facilityResponse.getDetails().isEmpty()) {
+                    KopisDetailDto facility = facilityResponse.getDetails().get(0);
+                    result.applyFacility(facility.getAdres(), facility.getLat(), facility.getLng());
+                }
+            } catch (Exception e) {
+                log.warn("공연시설 정보 조회 실패: mt10id={}", detailDto.getMt10id());
+            }
+
+            return result;
 
         } catch (EntityNotFoundException e) {
             throw e;
@@ -127,6 +160,7 @@ public class ProductServiceimple implements ProductService {
     // Private — 내부 로직
     // ============================================================
 
+    // 박스오피스 — 1시간 캐싱
     private List<PerformanceListDto> getBoxOfficeRanking(String areaCode, String rankType) {
         LocalDate now = LocalDate.now();
         String eddate = now.minusDays(1).format(DATE_FMT);
@@ -138,6 +172,10 @@ public class ProductServiceimple implements ProductService {
 
         try {
             String xml = kopisClient.getBoxOffice(API_KEY, stdate, eddate, "AAAA", areaCode);
+
+            // ✅ KOPIS가 보낸 실제 XML 데이터 확인용 로그 추가
+            log.info("=== KOPIS 박스오피스 응답 원본 XML ===\n{}", xml);
+
             KopisBoxOfficeResponseDto response = parseXml(xml, KopisBoxOfficeResponseDto.class);
 
             if (response == null || response.getBoxOfficeList() == null) {
@@ -145,21 +183,23 @@ public class ProductServiceimple implements ProductService {
             }
 
             return response.getBoxOfficeList().stream()
-                    .map(item -> new PerformanceListDto(
+                    .map(item -> PerformanceListDto.ofRanking(
                             item.getMt20id(), item.getPrfnm(), item.getPoster(),
                             item.getPrfplcnm(), item.getPrfpd()
                     ))
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            return getGeneralPerformanceList(areaCode, rankType);
+            log.error("박스오피스 조회 실패: {}", e.getMessage());
+            return Collections.emptyList();
+
         }
     }
 
-    private List<PerformanceListDto> getGeneralPerformanceList(String areaCode, String rankType) {
+    private List<PerformanceListDto> getClosingPerformanceList(String areaCode) {
         LocalDate now = LocalDate.now();
-        String stdate = now.minusMonths(3).format(DATE_FMT);
-        String eddate = now.plusMonths(6).format(DATE_FMT);
+        String stdate = now.format(DATE_FMT);
+        String eddate = now.plusDays(14).format(DATE_FMT); // 2주 내 종료 공연
 
         String[] codes = (areaCode != null && !areaCode.isBlank())
                 ? areaCode.split("\\|")
@@ -170,42 +210,86 @@ public class ProductServiceimple implements ProductService {
         for (String code : codes) {
             try {
                 String xml = kopisClient.getPerformanceList(
-                        API_KEY, stdate, eddate, 1, 20, "AAAA", "0102", code);
+                        API_KEY, stdate, eddate, 1, 20, "AAAA", "02", code);
                 KopisResponseDto response = parseXml(xml, KopisResponseDto.class);
 
                 if (response == null || response.getPerformances() == null) continue;
 
                 response.getPerformances().stream()
-                        .map(item -> {
-                            log.info("필터 전 — mt20id={}, title={}, prfstate={}",
-                                    item.getId(), item.getTitle(), item.getPrfstate()); // ✅ 필터 전
-                            return item;
-                        })
-                        .filter(item -> VALID_STATES.contains(item.getPrfstate()))
-                        .map(item -> {
-                            log.info("mt20id={}, title={}", item.getId(), item.getTitle());
-                            return new PerformanceListDto(
-                                item.getId(), item.getTitle(), item.getPosterPath(), item.getHallName(),
-                                item.getStartDate(), item.getEndDate()
-                        );
-                        })
+                        .map(item -> PerformanceListDto.ofGeneral(
+                                item.getId(), item.getTitle(), item.getPosterPath(),
+                                item.getHallName(), item.getStartDate(), item.getEndDate()
+                        ))
                         .forEach(totalList::add);
 
             } catch (Exception e) {
+                log.warn("종료임박 조회 실패 [{}]: {}", code, e.getMessage());
             }
         }
 
-        return totalList.isEmpty() ? Collections.emptyList() : sortList(totalList, rankType);
+        // 종료일 빠른 순 정렬
+        return totalList.stream()
+                .sorted(Comparator.comparing(PerformanceListDto::getEndDate))
+                .collect(Collectors.toList());
     }
 
-    private List<PerformanceListDto> sortList(List<PerformanceListDto> list, String rankType) {
-        if ("closing".equals(rankType)) {
-            return list.stream()
-                    .sorted(Comparator.comparing(PerformanceListDto::getEndDate))
-                    .collect(Collectors.toList());
+    @Override
+    public List<String> getAvailableDates(String mt20id, int year, int month) {
+        // 1. 캐싱된 공연 상세 정보 가져오기
+        PerformanceDetailDto detail = getPerformanceDetail(mt20id);
+
+
+        // 2. KOPIS 날짜 포맷(yyyy.MM.dd)을 LocalDate로 변환
+        DateTimeFormatter kopisFmt = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        LocalDate startDate = LocalDate.parse(detail.getPrfpdfrom(), kopisFmt);
+        LocalDate endDate = LocalDate.parse(detail.getPrfpdto(), kopisFmt);
+
+        // 3. 달력에서 요청한 월의 시작일과 종료일 계산
+        LocalDate queryMonthStart = LocalDate.of(year, month, 1);
+        LocalDate queryMonthEnd = queryMonthStart.withDayOfMonth(queryMonthStart.lengthOfMonth());
+
+        // 4. 실제 공연 기간과 달력 월의 교집합(겹치는 기간) 산출
+        LocalDate actualStart = startDate.isAfter(queryMonthStart) ? startDate : queryMonthStart;
+        LocalDate actualEnd = endDate.isBefore(queryMonthEnd) ? endDate : queryMonthEnd;
+
+        List<String> availableDates = new ArrayList<>();
+
+        // 달력 월에 공연이 아예 없는 경우 빈 리스트 반환
+        if (actualStart.isAfter(actualEnd)) {
+            return availableDates;
         }
-        return list;
+
+        // 5. KOPIS의 dtguidance(공연안내) 텍스트를 기반으로 정기 휴무일 파악
+        // 예: "화요일 ~ 금요일(20:00), 토요일(15:00,19:00), 일요일(15:00), 월요일 휴무"
+        String guidance = detail.getDtguidance() != null ? detail.getDtguidance() : "";
+
+        // 📍 [확인용 로그] KOPIS에서 가져온 dtguidance 원본 값 출력
+        System.out.println("==========================================");
+        System.out.println("[KOPIS ID] : " + mt20id);
+        System.out.println("[dtguidance 원본값] : " + detail.getDtguidance());
+        System.out.println("==========================================");
+
+        // 대부분의 연극/뮤지컬은 월요일 휴무이므로, 월요일 휴무 여부 체크
+        boolean isMondayClosed = guidance.contains("월요일 휴무") || !guidance.contains("월요일");
+        boolean isTuesdayClosed = guidance.contains("화요일 휴무");
+        // 필요에 따라 수/목/금 등 추가 가능
+
+        // 6. 유효한 날짜만 리스트에 YYYY-MM-DD 형태로 추가
+        for (LocalDate date = actualStart; !date.isAfter(actualEnd); date = date.plusDays(1)) {
+
+            // 정기 휴무일 걸러내기
+            if (isMondayClosed && date.getDayOfWeek() == DayOfWeek.MONDAY) continue;
+            if (isTuesdayClosed && date.getDayOfWeek() == DayOfWeek.TUESDAY) continue;
+
+            // KOPIS에 공휴일 특별 편성이 텍스트로 섞여있는 경우 정교한 파싱이 어렵기 때문에
+            // 기본적으로 기간 + 휴무요일 필터링만 거쳐도 달력 UI로 쓰기 충분합니다.
+
+            availableDates.add(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+
+        return availableDates;
     }
+
 
     // ✅ XML 파싱 공통 메서드
     private <T> T parseXml(String xml, Class<T> clazz) throws Exception {

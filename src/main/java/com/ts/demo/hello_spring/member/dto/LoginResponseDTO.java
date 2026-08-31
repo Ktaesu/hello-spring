@@ -9,4 +9,5 @@ public class LoginResponseDTO {
 
     private String memberId;
     private  String memberName;
+    private String role;
 }

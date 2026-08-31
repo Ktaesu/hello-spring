@@ -39,8 +39,11 @@ public class MemberServiceImple implements MemberService{
             throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
+        String encoded = encoder.encode("1234");
+        System.out.println(encoded);
+
         // 3. DTO 대신 JWT 토큰을 생성해서 반환합니다.
-        return jwtProvider.createToken(member.getMemberId());
+        return jwtProvider.createToken(member.getMemberId(), member.getRole());
     }
 
     //아이디 중복체크

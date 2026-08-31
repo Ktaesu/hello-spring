@@ -37,6 +37,10 @@
                 </div>
             </div>
             <div class="menu">
+                <!-- 관리자 로그인 시에만 표시 -->
+                <div sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin}">관리자</a>
+                </div>
                 <div>
                     <a th:href="@{/product/mainProduct}">상품</a>
                 </div>

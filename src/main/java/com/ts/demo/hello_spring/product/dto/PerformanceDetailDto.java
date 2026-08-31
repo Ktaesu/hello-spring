@@ -2,11 +2,13 @@ package com.ts.demo.hello_spring.product.dto;
 
 import com.ts.demo.hello_spring.common.api.kopisClient.KopisDetailDto;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Slf4j
 public class PerformanceDetailDto {
 
     private String mt20id;
@@ -17,6 +19,7 @@ public class PerformanceDetailDto {
     private String prfruntime;
     private String prfage;
     private String pcseguidance;
+    private String dtguidance; // ✅ 공연시간/요일 정보 필드 추가
     private String poster;
     private String area;
     private String genrenm;
@@ -26,6 +29,7 @@ public class PerformanceDetailDto {
     private double lat;
     private double lng;
     private String minPrice;
+    private List<String> styurls = new ArrayList<>();
 
     // 가격 파싱용 내부 클래스
     @Getter
@@ -69,16 +73,16 @@ public class PerformanceDetailDto {
         d.prfruntime   = dto.getPrfruntime();
         d.prfage       = dto.getPrfage();
         d.pcseguidance = dto.getPcseguidance();
+        d.dtguidance   = dto.getDtguidance(); // ✅ dtguidance 매핑 추가
         d.poster       = dto.getPoster();
         d.area         = dto.getArea();
         d.genrenm      = dto.getGenrenm();
         d.prfstate     = dto.getPrfstate();
         d.sty          = dto.getSty();
-        d.adres        = dto.getAdres();
-
-        // 위도/경도 파싱 (null 안전하게)
-        try { d.lat = Double.parseDouble(dto.getLat()); } catch (Exception e) { d.lat = 37.5665; }
-        try { d.lng = Double.parseDouble(dto.getLng()); } catch (Exception e) { d.lng = 126.9780; }
+        d.styurls = dto.getStyurls() != null ? dto.getStyurls() : new ArrayList<>();
+        log.info("소개 이미지 개수={}, urls={}",
+                dto.getStyurls() != null ? dto.getStyurls().size() : 0,
+                dto.getStyurls());
 
         // 가격 파싱 — "VIP석 170,000원, R석 130,000원" 형태
         d.priceList = parsePrices(dto.getPcseguidance());
@@ -126,5 +130,12 @@ public class PerformanceDetailDto {
             }
         }
         return list;
+    }
+
+    // 공연시설 정보 적용
+    public void applyFacility(String adres, String lat, String lng) {
+        this.adres = adres;
+        try { this.lat = Double.parseDouble(lat); } catch (Exception e) { this.lat = 37.5665; }
+        try { this.lng = Double.parseDouble(lng); } catch (Exception e) { this.lng = 126.9780; }
     }
 }
